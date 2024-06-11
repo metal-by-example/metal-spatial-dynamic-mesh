@@ -98,6 +98,27 @@ lowLevelMesh.parts.replaceAll([
 ])
 ```
 
+Here's a sketch of how you might dispatch the compute work to perform a mesh update:
+
+```swift
+let commandBuffer = commandQueue.makeCommandBuffer()!
+let threadgroupSize = MTLSize(...)
+
+let commandEncoder = commandBuffer.makeComputeCommandEncoder()!
+let vertexBuffer = lowLevelMesh.replace(bufferIndex: 0, using: commandBuffer)
+commandEncoder.setBuffer(vertexBuffer, offset: 0, index: 0)
+// ... set compute pipeline and other necessary state ...
+commandEncoder.dispatchThreadgroups(..., threadsPerThreadgroup: threadgroupSize)
+
+let indexBuffer = lowLevelMesh.replaceIndices(using: updateCommandBuffer)
+commandEncoder.setBuffer(indexBuffer, offset: 0, index: 0)
+// ... set compute pipeline and other necessary state ...
+commandEncoder.dispatchThreads(..., threadsPerThreadgroup: threadgroupSize)
+commandEncoder.endEncoding()
+
+commandBuffer.commit()
+```
+
 Since this is an introduction to the `LowLevelMesh` API and not a Metal tutorial, I refer you to the source code for the details of how the vertex and index buffers are populated on the GPU using compute shaders.
 
 ## Displaying a Low-Level Mesh
