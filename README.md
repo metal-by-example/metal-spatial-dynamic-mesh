@@ -1,6 +1,6 @@
 # Dynamic RealityKit Meshes with LowLevelMesh
 
-This sample is a demonstration of how to use the [`LowLevelMesh`](https://developer.apple.com/documentation/realitykit/lowlevelmesh) class in RealityKit, introduced in visionOS 2 , iOS 18, and macOS 15 Sequoia.
+This sample is a demonstration of how to use the [`LowLevelMesh`](https://developer.apple.com/documentation/realitykit/lowlevelmesh) class in RealityKit, introduced in visionOS 2 , iOS 18, and macOS 15 Sequoia. **Requires Xcode 16.0 Beta 1 or newer.**
 
 ![A screenshot of the sample app running on the visionOS Simulator](screenshots/01.png)
 
