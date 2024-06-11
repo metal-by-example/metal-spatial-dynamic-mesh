@@ -108,9 +108,9 @@ let commandEncoder = commandBuffer.makeComputeCommandEncoder()!
 let vertexBuffer = lowLevelMesh.replace(bufferIndex: 0, using: commandBuffer)
 commandEncoder.setBuffer(vertexBuffer, offset: 0, index: 0)
 // ... set compute pipeline and other necessary state ...
-commandEncoder.dispatchThreadgroups(..., threadsPerThreadgroup: threadgroupSize)
+commandEncoder.dispatchThreads(..., threadsPerThreadgroup: threadgroupSize)
 
-let indexBuffer = lowLevelMesh.replaceIndices(using: updateCommandBuffer)
+let indexBuffer = lowLevelMesh.replaceIndices(using: commandBuffer)
 commandEncoder.setBuffer(indexBuffer, offset: 0, index: 0)
 // ... set compute pipeline and other necessary state ...
 commandEncoder.dispatchThreads(..., threadsPerThreadgroup: threadgroupSize)
