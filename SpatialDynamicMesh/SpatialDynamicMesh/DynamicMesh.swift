@@ -38,28 +38,17 @@ class AnimatedWaveMesh {
             .init(bufferIndex: 0, bufferOffset: 0, bufferStride: vertex.stride)
         ]
 
-        let vertexCount = (maxSegmentCount + 1) * (maxSegmentCount + 1)
-        let indexCount = maxSegmentCount * maxSegmentCount * 6
+        let vertexCapacity = (maxSegmentCount + 1) * (maxSegmentCount + 1)
+        let indexCapacity = maxSegmentCount * maxSegmentCount * 6
 
         // Create a mesh descriptor that describes a mesh comprised of vertices as laid out above
-        let meshDescriptor = LowLevelMesh.Descriptor(vertexCapacity: vertexCount,
+        let meshDescriptor = LowLevelMesh.Descriptor(vertexCapacity: vertexCapacity,
                                                      vertexAttributes: attributes,
                                                      vertexLayouts: layouts,
-                                                     indexCapacity: indexCount,
+                                                     indexCapacity: indexCapacity,
                                                      indexType: MTLIndexType.uint32)
 
         self.lowLevelMesh = try LowLevelMesh(descriptor: meshDescriptor)
-
-        let bounds = BoundingBox(min: SIMD3<Float>(-0.5, -0.5, -0.5),
-                                 max: SIMD3<Float>(0.5, 0.5, 0.5))
-
-        self.lowLevelMesh.parts.replaceAll([
-            LowLevelMesh.Part(indexOffset: 0,
-                              indexCount: indexCount,
-                              topology: .triangle,
-                              materialIndex: 0,
-                              bounds: bounds)
-        ])
 
         update(0.0)
     }
@@ -70,6 +59,8 @@ class AnimatedWaveMesh {
         guard let updateCommandBuffer = context.commandQueue.makeCommandBuffer() else { return }
 
         let activeSegmentCount = max(0, min(segmentCount, maxSegmentCount))
+        let indexCount = activeSegmentCount * activeSegmentCount * 6
+
         var waveDescriptor = WaveDescriptor(segmentCount: UInt32(activeSegmentCount),
                                             time: Float(time) * speed,
                                             waveDensity: waveDensity,
@@ -107,6 +98,17 @@ class AnimatedWaveMesh {
                 } else {
                     commandEncoder.dispatchThreads(indexThreads, threadsPerThreadgroup: threadgroupSize)
                 }
+
+                let bounds = BoundingBox(min: SIMD3<Float>(-0.5, -1.0, -0.5), 
+                                         max: SIMD3<Float>(0.5, 1.0, 0.5))
+                lowLevelMesh.parts.replaceAll([
+                    LowLevelMesh.Part(indexOffset: 0,
+                                      indexCount: indexCount,
+                                      topology: .triangle,
+                                      materialIndex: 0,
+                                      bounds: bounds)
+                ])
+
                 needsTopologyUpdate = false
             }
 
