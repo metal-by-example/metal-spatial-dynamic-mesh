@@ -34,48 +34,6 @@ class SceneContent {
     }
 }
 
-#if os(iOS)
-struct ARViewContainer : UIViewRepresentable {
-    typealias UIViewType = ARView
-
-    @State var content: SceneContent
-
-    func makeUIView(context: Context) -> ARView {
-        return ARView(frame: .zero,
-                      cameraMode: .nonAR,
-                      automaticallyConfigureSession: true)
-    }
-
-    func updateUIView(_ uiView: ARView, context: Context) {
-        content.modelEntity.transform.scale = SIMD3<Float>(repeating: 2.0)
-
-        let anchorEntity = AnchorEntity(world: SIMD3<Float>(0, 0, -0.5))
-        anchorEntity.transform.rotation = simd_quatf(angle: .pi / 4, axis: SIMD3<Float>(1, 0, 0))
-        anchorEntity.addChild(content.modelEntity)
-        uiView.scene.addAnchor(anchorEntity)
-    }
-}
-#elseif os(macOS)
-struct ARViewContainer : NSViewRepresentable {
-    typealias NSViewType = ARView
-
-    @State var content: SceneContent
-
-    func makeNSView(context: Context) -> ARView {
-        return ARView(frame: .zero)
-    }
-
-    func updateNSView(_ nsView: ARView, context: Context) {
-        content.modelEntity.transform.scale = SIMD3<Float>(repeating: 2.0)
-
-        let anchorEntity = AnchorEntity(world: SIMD3<Float>(0, 0, -0.5))
-        anchorEntity.transform.rotation = simd_quatf(angle: .pi / 4, axis: SIMD3<Float>(1, 0, 0))
-        anchorEntity.addChild(content.modelEntity)
-        nsView.scene.addAnchor(anchorEntity)
-    }
-}
-#endif
-
 let animationFrameDuration: TimeInterval = 1.0 / 60.0
 
 struct ContentView: View {
@@ -86,9 +44,16 @@ struct ContentView: View {
     private let timer = Timer.publish(every: animationFrameDuration, on: .main, in: .common).autoconnect()
 
     var body: some View {
-        #if os(visionOS)
         RealityView { content in
+            #if os(visionOS)
             content.add(sceneContent.modelEntity)
+            #else
+            sceneContent.modelEntity.transform.scale = SIMD3<Float>(repeating: 2.0)
+            let anchorEntity = AnchorEntity(world: SIMD3<Float>(0, 0, -0.5))
+            anchorEntity.transform.rotation = simd_quatf(angle: .pi / 4, axis: SIMD3<Float>(1, 0, 0))
+            anchorEntity.addChild(sceneContent.modelEntity)
+            content.add(anchorEntity)
+            #endif
         } update: { content in
             sceneContent.wave.update(frameDuration)
         }
@@ -98,16 +63,6 @@ struct ContentView: View {
             lastUpdateTime = currentTime
         }
         .ignoresSafeArea()
-        #else
-        ARViewContainer(content: sceneContent)
-        .onReceive(timer) { input in
-            let currentTime = CACurrentMediaTime()
-            frameDuration = currentTime - lastUpdateTime
-            lastUpdateTime = currentTime
-            sceneContent.wave.update(frameDuration)
-        }
-        .ignoresSafeArea()
-        #endif
     }
 }
 
