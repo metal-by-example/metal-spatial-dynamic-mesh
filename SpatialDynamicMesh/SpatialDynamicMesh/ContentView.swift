@@ -1,6 +1,7 @@
 import SwiftUI
 import RealityKit
 
+@MainActor
 class SceneContent {
     let context: MetalContext
     let modelEntity = ModelEntity()

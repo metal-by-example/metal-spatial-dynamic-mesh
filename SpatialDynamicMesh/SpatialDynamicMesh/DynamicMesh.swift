@@ -1,6 +1,7 @@
 import Metal
 import RealityKit
 
+@MainActor
 class AnimatedWaveMesh {
     let maxSegmentCount = 128
     let context: MetalContext
